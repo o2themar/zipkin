@@ -103,7 +103,7 @@ public class JsonSerializersTest {
   }
 
   @Test
-  public void span_ignoreArray_value() {
+  public void span_ignoreArrayValue_forAnythingOtherThanAnnotation() {
     String json =
       "{\n"
         + "  \"traceId\": \"6b221d5bc9e6496c\",\n"
@@ -116,7 +116,7 @@ public class JsonSerializersTest {
   }
 
   @Test
-  public void span_tag_ignoreArray_value() {
+  public void span_tag_array_read() {
     String json =
       "{\n"
         + "  \"traceId\": \"6b221d5bc9e6496c\",\n"
@@ -127,7 +127,8 @@ public class JsonSerializersTest {
         + "  }"
         + "}";
 
-    parse(SPAN_PARSER, json);
+    Span span = parse(SPAN_PARSER, json);
+    assertThat(span.tags()).containsExactly(entry("nums", "[1, 2, 3]"));
   }
 
   @Test

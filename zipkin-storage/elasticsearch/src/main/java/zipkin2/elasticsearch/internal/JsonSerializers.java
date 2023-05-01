@@ -21,6 +21,10 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import zipkin2.Annotation;
 import zipkin2.DependencyLink;
 import zipkin2.Endpoint;
@@ -112,8 +116,19 @@ public final class JsonSerializers {
           while (parser.nextValue() != JsonToken.END_OBJECT) {
             String parserCurrentName = parser.currentName();
             String parserValue = parser.getValueAsString();
-            if (parserCurrentName == null || parserValue == null) continue;
-            result.putTag(parserCurrentName, parserValue);
+            List<String> parserValueArray = new ArrayList<>();
+
+            if (parser.currentToken() == JsonToken.START_ARRAY) {
+              while (parser.nextToken() != JsonToken.END_ARRAY) {
+                parserValueArray.add(parser.getValueAsString());
+              }
+            }
+
+            if (parserValueArray.size() > 0) {
+              result.putTag(parserCurrentName, Arrays.toString(parserValueArray.toArray()));
+            } else {
+              result.putTag(parserCurrentName, parserValue);
+            }
           }
           break;
         case "debug":
