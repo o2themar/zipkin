@@ -13,11 +13,7 @@
  */
 package zipkin2.storage;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -308,7 +304,7 @@ public abstract class ITSpanStore<T extends StorageComponent> extends ITStorage<
       requestBuilder().annotationQuery(Collections.singletonMap("foo", "bar")).build());
 
     assertGetTracesReturns(
-      requestBuilder().annotationQuery(clientSpan.tags()).build(),
+      requestBuilder().annotationQuery(new HashMap<>(clientSpan.tags())).build(),
       asList(clientSpan));
   }
 

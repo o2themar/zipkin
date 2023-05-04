@@ -80,11 +80,13 @@ final class ElasticsearchSpanStore implements SpanStore, Traces, ServiceAndSpanN
       filters.addTerm("name", request.spanName());
     }
 
-    for (Map.Entry<String, String> kv : request.annotationQuery().entrySet()) {
-      if (kv.getValue().isEmpty()) {
+    System.out.println("Before annotationQuery loop");
+    for (Map.Entry<String, Object> kv : request.annotationQuery().entrySet()) {
+      System.out.println("Inside annotationQuery loop: " + kv.getKey() + " " + kv.getValue());
+      if (kv.getValue().toString().isEmpty()) {
         filters.addTerm("_q", kv.getKey());
       } else {
-        filters.addTerm("_q", kv.getKey() + "=" + kv.getValue());
+        filters.addTerm("_q", kv.getKey() + "=" + kv.getValue().toString());
       }
     }
 

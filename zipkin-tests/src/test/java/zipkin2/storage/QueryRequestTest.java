@@ -13,6 +13,7 @@
  */
 package zipkin2.storage;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.Rule;
@@ -66,7 +67,7 @@ public class QueryRequestTest {
   }
 
   @Test public void annotationQuerySkipsEmptyKeys() {
-    Map<String, String> query = new LinkedHashMap<>();
+    Map<String, Object> query = new LinkedHashMap<>();
     query.put("", "bar");
 
     assertThat(queryBuilder.annotationQuery(query).build().annotationQuery())
@@ -98,6 +99,13 @@ public class QueryRequestTest {
     // also last tag wins
     assertThat(queryBuilder.parseAnnotationQuery("a=123 and a=456").annotationQuery).containsOnly(entry("a", "456"));
     assertThat(queryBuilder.parseAnnotationQuery("a and a=123 and a=456").annotationQuery).containsOnly(entry("a", "456"));
+  }
+
+  @Test public void annotationQueryParsesArrayValues() {
+    // As comma separated strings
+    assertThat(queryBuilder.parseAnnotationQuery("a=1,2,3").annotationQuery).containsOnly(entry("a", new String[]{"1", "2", "3"}));
+    // As an array
+    assertThat(queryBuilder.parseAnnotationQuery("a=[1,2,3]").annotationQuery).containsOnly(entry("a", new String[]{"1", "2", "3"}));
   }
 
   @Test public void endTsMustBePositive() {

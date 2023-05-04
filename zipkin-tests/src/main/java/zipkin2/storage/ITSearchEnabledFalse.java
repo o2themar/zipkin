@@ -17,6 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import zipkin2.Span;
 
+import java.util.HashMap;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static zipkin2.TestObjects.newClientSpan;
 import static zipkin2.TestObjects.spanBuilder;
@@ -48,7 +50,7 @@ public abstract class ITSearchEnabledFalse<T extends StorageComponent> extends I
       requestBuilder().spanName(clientSpan.name()).build());
 
     assertGetTracesReturnsEmpty(
-      requestBuilder().annotationQuery(clientSpan.tags()).build());
+      requestBuilder().annotationQuery(new HashMap<>(clientSpan.tags())).build());
 
     assertGetTracesReturnsEmpty(
       requestBuilder().minDuration(clientSpan.duration()).build());

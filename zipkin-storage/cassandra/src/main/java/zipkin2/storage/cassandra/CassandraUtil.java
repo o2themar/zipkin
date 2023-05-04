@@ -86,8 +86,8 @@ final class CassandraUtil {
 
   static List<String> annotationKeys(QueryRequest request) {
     Set<String> annotationKeys = new LinkedHashSet<>();
-    for (Map.Entry<String, String> e : request.annotationQuery().entrySet()) {
-      if (e.getValue().isEmpty()) {
+    for (Map.Entry<String, Object> e : request.annotationQuery().entrySet()) {
+      if (e.getValue().toString().isEmpty()) {
         annotationKeys.add(e.getKey());
       } else {
         annotationKeys.add(e.getKey() + "=" + e.getValue());

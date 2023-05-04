@@ -61,6 +61,8 @@ public final class SearchRequest {
     }
 
     public Filters addTerm(String field, String value) {
+      System.out.println("addTerm field " + field);
+      System.out.println(("addTerm value " + value));
       add(new Term(field, value));
       return this;
     }

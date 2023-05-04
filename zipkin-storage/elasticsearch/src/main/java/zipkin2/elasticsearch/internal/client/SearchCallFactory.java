@@ -35,6 +35,7 @@ public class SearchCallFactory {
   public <V> HttpCall<V> newCall(SearchRequest request, HttpCall.BodyConverter<V> bodyConverter) {
     final AggregatedHttpRequest httpRequest;
     try {
+      System.out.println("SearchRequest: " + OBJECT_MAPPER.writeValueAsString(request));
       httpRequest = AggregatedHttpRequest.of(
         RequestHeaders.of(
           HttpMethod.POST, lenientSearch(request.indices, request.type),
@@ -43,6 +44,7 @@ public class SearchCallFactory {
     } catch (JsonProcessingException e) {
       throw new AssertionError("Could not serialize SearchRequest to bytes.", e);
     }
+    System.out.println("SearchRequest: " + request.tag());
     return http.newCall(httpRequest, bodyConverter, request.tag());
   }
 

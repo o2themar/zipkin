@@ -13,12 +13,8 @@
  */
 package zipkin2.storage;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
+
 import zipkin2.Annotation;
 import zipkin2.Span;
 import zipkin2.internal.Nullable;
@@ -71,7 +67,7 @@ public final class QueryRequest {
    *
    * <p>Multiple entries are combined with AND, and AND against other conditions.
    */
-  public Map<String, String> annotationQuery() {
+  public Map<String, Object> annotationQuery() {
     return annotationQuery;
   }
 
@@ -120,11 +116,11 @@ public final class QueryRequest {
   @Nullable public String annotationQueryString() {
     StringBuilder result = new StringBuilder();
 
-    for (Iterator<Map.Entry<String, String>> i = annotationQuery().entrySet().iterator();
+    for (Iterator<Map.Entry<String, Object>> i = annotationQuery().entrySet().iterator();
       i.hasNext(); ) {
-      Map.Entry<String, String> next = i.next();
+      Map.Entry<String, Object> next = i.next();
       result.append(next.getKey());
-      if (!next.getValue().isEmpty()) result.append('=').append(next.getValue());
+      if (!next.getValue().toString().isEmpty()) result.append('=').append(next.getValue());
       if (i.hasNext()) result.append(" and ");
     }
 
@@ -141,7 +137,7 @@ public final class QueryRequest {
 
   public static final class Builder {
     String serviceName, remoteServiceName, spanName;
-    Map<String, String> annotationQuery = Collections.emptyMap();
+    Map<String, Object> annotationQuery = Collections.emptyMap();
     Long minDuration, maxDuration;
     long endTs, lookback;
     int limit;
@@ -188,7 +184,7 @@ public final class QueryRequest {
      */
     public Builder parseAnnotationQuery(@Nullable String annotationQuery) {
       if (annotationQuery == null || annotationQuery.isEmpty()) return this;
-      Map<String, String> map = new LinkedHashMap<String, String>();
+      Map<String, Object> map = new LinkedHashMap<>();
       for (String ann : annotationQuery.split(" and ", 100)) {
         int idx = ann.indexOf('=');
         if (idx == -1) {
@@ -199,15 +195,27 @@ public final class QueryRequest {
           // tag
           String[] keyValue = ann.split("=", 2);
           // tags are put regardless, i.e. last tag wins
+          String value = ann.substring(idx + 1).trim();
+          String[] values = null;
+          if (value.contains(",")) {
+            System.out.println("value: " + value);
+            if (value.startsWith("[") && value.endsWith("]")) {
+              values = value.substring(1, value.length() - 1).split(",");
+            } else {
+              values = value.split(",");
+            }
+            System.out.println("values: " + Arrays.toString(values));
+          }
           map.put(ann.substring(0, idx).trim(),
-            keyValue.length < 2 ? "" : ann.substring(idx + 1).trim());
+            keyValue.length < 2 ? "" : (values != null ? values : value));
+//          keyValue.length < 2 ? "" : value);
         }
       }
       return annotationQuery(map);
     }
 
     /** Sets {@link QueryRequest#annotationQuery()} */
-    public Builder annotationQuery(Map<String, String> annotationQuery) {
+    public Builder annotationQuery(Map<String, Object> annotationQuery) {
       if (annotationQuery == null) throw new NullPointerException("annotationQuery == null");
       this.annotationQuery = annotationQuery;
       return this;
@@ -312,8 +320,8 @@ public final class QueryRequest {
     String serviceNameToMatch = serviceName();
     String remoteServiceNameToMatch = remoteServiceName();
     String spanNameToMatch = spanName();
-    Map<String, String> annotationQueryRemaining =
-      new LinkedHashMap<String, String>(annotationQuery());
+    Map<String, Object> annotationQueryRemaining =
+      new LinkedHashMap<>(annotationQuery());
 
     for (Span span : spans) {
       String localServiceName = span.localServiceName();
@@ -327,9 +335,9 @@ public final class QueryRequest {
           }
         }
         for (Map.Entry<String, String> t : span.tags().entrySet()) {
-          String value = annotationQueryRemaining.get(t.getKey());
+          Object value = annotationQueryRemaining.get(t.getKey());
           if (value == null) continue;
-          if (value.isEmpty() || value.equals(t.getValue())) {
+          if (value.toString().isEmpty() || value.equals(t.getValue())) {
             annotationQueryRemaining.remove(t.getKey());
           }
         }
@@ -358,7 +366,7 @@ public final class QueryRequest {
   }
 
   final String serviceName, remoteServiceName, spanName;
-  final Map<String, String> annotationQuery;
+  final Map<String, Object> annotationQuery;
   final Long minDuration, maxDuration;
   final long endTs, lookback;
   final int limit;
@@ -367,7 +375,7 @@ public final class QueryRequest {
     @Nullable String serviceName,
     @Nullable String remoteServiceName,
     @Nullable String spanName,
-    Map<String, String> annotationQuery,
+    Map<String, Object> annotationQuery,
     @Nullable Long minDuration,
     @Nullable Long maxDuration,
     long endTs,

@@ -201,9 +201,9 @@ abstract class SelectSpansAndAnnotations implements Function<DSLContext, List<Sp
       ZIPKIN_SPANS.join(ZIPKIN_ANNOTATIONS).on(schema.joinCondition(ZIPKIN_ANNOTATIONS));
 
     int i = 0;
-    for (Map.Entry<String, String> kv : request.annotationQuery().entrySet()) {
+    for (Map.Entry<String, Object> kv : request.annotationQuery().entrySet()) {
       ZipkinAnnotations aTable = ZIPKIN_ANNOTATIONS.as("a" + i++);
-      if (kv.getValue().isEmpty()) {
+      if (kv.getValue().toString().isEmpty()) {
         table =
           maybeOnService(
             table
@@ -220,7 +220,7 @@ abstract class SelectSpansAndAnnotations implements Function<DSLContext, List<Sp
               .on(schema.joinCondition(aTable))
               .and(aTable.A_TYPE.eq(V1BinaryAnnotation.TYPE_STRING))
               .and(aTable.A_KEY.eq(kv.getKey()))
-              .and(aTable.A_VALUE.eq(kv.getValue().getBytes(UTF_8))),
+              .and(aTable.A_VALUE.eq(kv.getValue().toString().getBytes(UTF_8))),
             aTable,
             request.serviceName());
       }
